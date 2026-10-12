@@ -1,0 +1,168 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Flock Meter API",
+    "version": "1.0.0",
+    "description": "API for retrieving electricity meter information. The API exposes two GET operations: index (list/search meters) and get (retrieve one meter by ID)."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development server; replace with the deployed API URL when available."
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v1/meters": {
+      "get": {
+        "operationId": "indexMeters",
+        "summary": "Index meters",
+        "description": "Returns a list of meters. Supports optional filtering by meter ID and status.",
+        "tags": [
+          "Meters"
+        ],
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter results by an exact meter ID.",
+            "schema": {
+              "type": "string",
+              "example": "MTR-1024"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter results by meter status.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Active",
+                "Inactive"
+              ],
+              "example": "Active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of records to return.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Number of records to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meter list returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterListResponse"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "meter_id": "MTR-1024",
+                      "status": "Active"
+                    },
+                    {
+                      "meter_id": "MTR-1025",
+                      "status": "Inactive"
+                    }
+                  ],
+                  "total": 2
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    },
+    "/api/v1/meters/{meter_id}": {
+      "get": {
+        "operationId": "getMeter",
+        "summary": "Get meter by ID",
+        "description": "Returns the details for one meter identified by its meter ID.",
+        "tags": [
+          "Meters"
+        ],
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the meter.",
+            "schema": {
+              "type": "string",
+              "example": "MTR-1024"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meter details returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meter"
+                },
+                "example": {
+                  "meter_id": "MTR-1024",
+                  "status": "Active",
+                  "network_location": "Feeder-12 / Transformer-04"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "No meter exists with the supplied ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "detail": "Meter not found"
+                }
+              }
+            }
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    }
+  },
