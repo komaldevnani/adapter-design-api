@@ -107,6 +107,94 @@
         }
       }
     },
+    
+    "/api/v1/meters/search": {
+      "get": {
+        "operationId": "searchMetersByNumber",
+        "summary": "Search meters by meter number",
+        "description": "Searches for meters using a full or partial meter number. This is a read-only operation.",
+        "tags": [
+          "Meters"
+        ],
+        "parameters": [
+          {
+            "name": "meter_number",
+            "in": "query",
+            "required": true,
+            "description": "Full or partial meter number to search for.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "MTR-1024"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of matching records to return.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Number of matching records to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search completed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterListResponse"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "meter_id": "MTR-1024",
+                      "status": "Active",
+                      "network_location": "Feeder-12 / Transformer-04"
+                    }
+                  ],
+                  "total": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The meter number is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "detail": "meter_number is required"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    },
     "/api/v1/meters/{meter_id}": {
       "get": {
         "operationId": "getMeter",
